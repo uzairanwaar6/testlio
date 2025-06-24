@@ -8,6 +8,7 @@ const baseUrl = 'http://localhost:8080';
 const Issues = {};
 
 Issues.get = async (context) => {
+  console.log(Issue);
   const issue = await Issue.findByPk(context.params.id);
   respond.success(context, { issue });
 };
