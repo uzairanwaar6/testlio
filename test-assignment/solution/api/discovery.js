@@ -1,6 +1,6 @@
 'use strict';
 
-const respond = require('./responses');
+const respond = require('../utils/responses');
 const baseUrl = 'http://localhost:8080';
 
 module.exports = (context) => {

@@ -1,13 +1,13 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const respond = require('./responses');
-const { User } = require('../models');
+const respond = require('../utils/responses');
+const { User} = require('../models');
 
 
 const Users = {};
 
-Users.register = async (ctx) => {
-    const { first_name, last_name, email, password } = ctx.request.body;
+Users.register = async (context) => {
+    const { first_name, last_name, email, password } = context.request.body;
 
     const existing = await User.findOne({ where: { email } });
     if (existing) {
@@ -24,8 +24,8 @@ Users.register = async (ctx) => {
     respond.success(context, { user: user });
 };
 
-Users.login = async (ctx) => {
-    const { email, password } = ctx.request.body;
+Users.login = async (context) => {
+    const { email, password } = context.request.body;
 
     const user = await User.findOne({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -43,8 +43,8 @@ Users.login = async (ctx) => {
     respond.success(context, { token: token });
 };
 
-Users.me = async (ctx) => {
-    respond.success(context, { user: ctx.state.user });
+Users.me = async (context) => {
+    respond.success(context, { user: context.state.user });
 };
 
 module.exports = Users;
