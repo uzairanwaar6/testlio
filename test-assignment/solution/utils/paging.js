@@ -1,4 +1,3 @@
-const { parse } = require('path');
 const { isValidInteger } = require('./misc')
 
 module.exports = {

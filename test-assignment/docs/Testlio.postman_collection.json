@@ -1,0 +1,283 @@
+{
+	"info": {
+		"_postman_id": "8bd4baad-8599-458d-838b-0e4200513280",
+		"name": "Testlio",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9082754"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    pm.environment.set(\"token\",  pm.response.json().token);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"admin@testlio.com\",\r\n    \"password\":\"Admin@1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseUrl}}users/login",
+							"host": [
+								"{{BaseUrl}}users"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Issue",
+			"item": [
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}issues/list",
+							"host": [
+								"{{BaseUrl}}issues"
+							],
+							"path": [
+								"list"
+							],
+							"query": [
+								{
+									"key": "pn",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "ps",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "title",
+									"value": "test",
+									"disabled": true
+								},
+								{
+									"key": "description",
+									"value": "TEst Issue Description",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}issues/:id",
+							"host": [
+								"{{BaseUrl}}issues"
+							],
+							"path": [
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{issueId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revisions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}issues/revisions/:id",
+							"host": [
+								"{{BaseUrl}}issues"
+							],
+							"path": [
+								"revisions",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{issueId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Issue Revisions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BaseUrl}}issues/:id/:revisionA/:revisionB",
+							"host": [
+								"{{BaseUrl}}issues"
+							],
+							"path": [
+								":id",
+								":revisionA",
+								":revisionB"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{issueId}}"
+								},
+								{
+									"key": "revisionA",
+									"value": "1"
+								},
+								{
+									"key": "revisionB",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code == 200 || pm.response.code == 201) {\r",
+									"    pm.environment.set(\"issueId\", pm.response.json().data.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\":\"TEst Issue\",\r\n    \"description\":\"TEst Issue Description...\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseUrl}}issues",
+							"host": [
+								"{{BaseUrl}}issues"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\":\"TEst Issue Updated\",\r\n    \"description\":\"TEst Issue Description... Updated\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BaseUrl}}issues/:id",
+							"host": [
+								"{{BaseUrl}}issues"
+							],
+							"path": [
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{issueId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"pm.request.headers.add(pm.environment.get('clientId'),'X-Client-ID');"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

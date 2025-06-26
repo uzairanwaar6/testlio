@@ -1,43 +1,41 @@
 const jwt = require('jsonwebtoken');
 const { Client } = require('../models');
-const response = require('../utils/responses'); // adjust path as needed
+const { response, HttpError } = require('../utils');
 
-const publicRoutes = ['/', '/users/login', '/users/register', '/health'];
+const swagger = 'swagger.json';
+const health = 'health';
+const publicRoutes = ['/', '/users/login', '/users/register', health, swagger];
 
-module.exports = async (ctx, next) => {
-  try {
-    // 1. Check Client ID
-    const clientId = ctx.headers['x-client-id'];
-    if (!clientId) {
-      return response.unauthorized(ctx, ['X-Client-ID header is missing']);
-    }
+module.exports = async (context, next) => {
 
-    const client = await Client.findOne({ where: { client_id: clientId } });
-    if (!client) {
-      return response.unauthorized(ctx, ['Invalid Client ID']);
-    }
+  if (context.path.endsWith(swagger) || context.path.endsWith(health))
+    return await next();
 
-    // 2. Skip JWT auth for public routes
-    if (publicRoutes.includes(ctx.path)) {
-      return await next();
-    }
+  const clientId = context.headers['x-client-id'];
+  if (!clientId)
+    throw new HttpError('X-Client-ID header is missing', 401);
 
-    // 3. Check JWT Token
-    const authHeader = ctx.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return response.unauthorized(ctx, ['Authorization token is missing or malformed']);
-    }
+  const client = await Client.findOne({ where: { client_id: clientId } });
+  if (!client)
+    throw new HttpError('Invalid Client ID', 401);
 
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const { password, ...safeUser } = decoded;
-    ctx.state.user = safeUser;
-
-    await next();
-  } catch (err) {
-    return response.unauthorized(ctx, [
-      err.name === 'JsonWebTokenError' ? 'Invalid token' : err.message
-    ]);
+  // 2. Skip JWT auth for public routes
+  if (publicRoutes.includes(context.path)) {
+    return await next();
   }
+
+  // 3. Check JWT Token
+  const authHeader = context.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer '))
+    throw new HttpError('Authorization token is missing or malformed', 401);
+
+
+  const token = authHeader.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+  const { password, ...safeUser } = decoded;
+  context.state.user = safeUser;
+
+  await next();
 };

@@ -1,27 +1,27 @@
 'use strict';
 
 module.exports = {
-  success: (ctx, data) => {
-    ctx.status = data ? 200 : 204;
-    ctx.body = data || null;
+  success: (context, data) => {
+    context.status = data ? 200 : 204;
+    context.body = data || null;
   },
 
-  badRequest: (ctx, errors) => {
-    ctx.status = 400;
-    ctx.body = {
+  badRequest: (context, errors) => {
+    context.status = 400;
+    context.body = {
       message: 'Check your request parameters',
       errors
     };
   },
 
-  notFound: (ctx) => {
-    ctx.status = 404;
-    ctx.body = { message: 'Resource was not found' }; // fixed typo: messsage → message
+  notFound: (context) => {
+    context.status = 404;
+    context.body = { message: 'Resource was not found' }; // fixed typo: messsage → message
   },
 
-  unauthorized: (ctx, errors = null) => {
-    ctx.status = 401;
-    ctx.body = {
+  unauthorized: (context, errors = null) => {
+    context.status = 401;
+    context.body = {
       message: 'Authentication failed',
       errors
     };

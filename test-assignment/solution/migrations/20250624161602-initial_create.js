@@ -41,9 +41,10 @@ module.exports = {
     });
 
     // 2. Create issues_history table
-    await queryInterface.createTable('issues_history', {
+     await queryInterface.createTable('issues_history', {
       id: {
         type: Sequelize.INTEGER.UNSIGNED,
+        allowNull: false,
         autoIncrement: true,
         primaryKey: true
       },
@@ -51,20 +52,30 @@ module.exports = {
         type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false
       },
-      column_name: {
+      // Snapshot columns
+      title: {
         type: Sequelize.STRING(100),
-        allowNull: false
+        allowNull: true
       },
-      old_value: {
+      description: {
         type: Sequelize.TEXT,
         allowNull: true
       },
-      new_value: {
-        type: Sequelize.TEXT,
+      created_by: {
+        type: Sequelize.STRING(100),
         allowNull: true
       },
+      updated_by: {
+        type: Sequelize.STRING(100),
+        allowNull: true
+      },     
       operation: {
-        type: Sequelize.ENUM('INSERT', 'UPDATE', 'DELETE'),
+        type: Sequelize.ENUM('create', 'update', 'delete'),
+        allowNull: false,
+        defaultValue: 'update'
+      },
+      row_version: {
+        type: Sequelize.INTEGER.UNSIGNED,
         allowNull: false
       },
       changed_by: {
@@ -75,12 +86,11 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      row_version: {
-        type: Sequelize.INTEGER.UNSIGNED,
-        allowNull: false
       }
     });
+
+    await queryInterface.addIndex('issues_history', ['issue_id']);
+    await queryInterface.addIndex('issues_history', ['row_version']);
 
     // 3. Add FK from issues_history → issues
     await queryInterface.addConstraint('issues_history', {
@@ -106,64 +116,112 @@ module.exports = {
     // AFTER INSERT trigger
     await createTrigger('trg_issues_after_insert', `
     CREATE TRIGGER trg_issues_after_insert
-    AFTER INSERT ON issues
-    FOR EACH ROW
-    BEGIN
-      DECLARE version INT DEFAULT 1;
+      AFTER INSERT ON issues
+      FOR EACH ROW
+      BEGIN
+        DECLARE version INT DEFAULT 1;
 
-      INSERT INTO issues_history (
-        issue_id, column_name, old_value, new_value, operation, changed_by, changed_at, row_version
-      )
-      VALUES 
-        (NEW.id, 'title', NULL, NEW.title, 'INSERT', NEW.created_by, NOW(), version),
-        (NEW.id, 'description', NULL, NEW.description, 'INSERT', NEW.created_by, NOW(), version),
-        (NEW.id, 'created_by', NULL, NEW.created_by, 'INSERT', NEW.created_by, NOW(), version);
-    END;
+        INSERT INTO issues_history (
+          issue_id,
+          title,
+          description,
+          created_by,
+          updated_by,
+          operation,
+          changed_by,
+          changed_at,
+          row_version
+        )
+        VALUES (
+          NEW.id,
+          NEW.title,
+          NEW.description,
+          NEW.created_by,
+          NEW.updated_by,
+          'create',
+          NEW.created_by,
+          NOW(),
+          version
+        );
+      END;
     `);
 
     // AFTER UPDATE trigger
     await createTrigger('trg_issues_after_update', `
     CREATE TRIGGER trg_issues_after_update
-    AFTER UPDATE ON issues
-    FOR EACH ROW
-    BEGIN
-      DECLARE version INT;
+      AFTER UPDATE ON issues
+      FOR EACH ROW
+      BEGIN
+        DECLARE version INT;
 
-      SELECT IFNULL(MAX(row_version), 0) + 1 INTO version FROM issues_history WHERE issue_id = NEW.id;
+        SELECT IFNULL(MAX(row_version), 0) + 1
+        INTO version
+        FROM issues_history
+        WHERE issue_id = NEW.id;
 
-      IF NOT (OLD.title <=> NEW.title) THEN
-        INSERT INTO issues_history VALUES (NULL, NEW.id, 'title', OLD.title, NEW.title, 'UPDATE', NEW.updated_by, NOW(), version);
-      END IF;
+        INSERT INTO issues_history (
+          issue_id,
+          title,
+          description,
+          created_by,
+          updated_by,
+          operation,
+          changed_by,
+          changed_at,
+          row_version
+        )
+        VALUES (
+          NEW.id,
+          NEW.title,
+          NEW.description,
+          NEW.created_by,
+          NEW.updated_by,
+          'update',
+          NEW.updated_by,
+          NOW(),
+          version
+        );
+      END;
 
-      IF NOT (OLD.description <=> NEW.description) THEN
-        INSERT INTO issues_history VALUES (NULL, NEW.id, 'description', OLD.description, NEW.description, 'UPDATE', NEW.updated_by, NOW(), version);
-      END IF;
-
-      IF NOT (OLD.updated_by <=> NEW.updated_by) THEN
-        INSERT INTO issues_history VALUES (NULL, NEW.id, 'updated_by', OLD.updated_by, NEW.updated_by, 'UPDATE', NEW.updated_by, NOW(), version);
-      END IF;
-    END;
     `);
 
     // AFTER DELETE trigger
     await createTrigger('trg_issues_after_delete', `
     CREATE TRIGGER trg_issues_after_delete
-    AFTER DELETE ON issues
-    FOR EACH ROW
-    BEGIN
-      DECLARE version INT;
+      AFTER DELETE ON issues
+      FOR EACH ROW
+      BEGIN
+        DECLARE version INT;
 
-      SELECT IFNULL(MAX(row_version), 0) + 1 INTO version FROM issues_history WHERE issue_id = OLD.id;
+        SELECT IFNULL(MAX(row_version), 0) + 1
+        INTO version
+        FROM issues_history
+        WHERE issue_id = OLD.id;
 
-      INSERT INTO issues_history (
-        issue_id, column_name, old_value, new_value, operation, changed_by, changed_at, row_version
-      )
-      VALUES 
-        (OLD.id, 'title', OLD.title, NULL, 'DELETE', OLD.updated_by, NOW(), version),
-        (OLD.id, 'description', OLD.description, NULL, 'DELETE', OLD.updated_by, NOW(), version),
-        (OLD.id, 'created_by', OLD.created_by, NULL, 'DELETE', OLD.updated_by, NOW(), version);
-    END;
-    `);
+
+        INSERT INTO issues_history (
+          issue_id,
+          title,
+          description,
+          created_by,
+          updated_by,
+          operation,
+          changed_by,
+          changed_at,
+          row_version
+        )
+        VALUES (
+          OLD.id,
+          OLD.title,
+          OLD.description,
+          OLD.created_by,
+          OLD.updated_by,
+          'delete',
+          OLD.updated_by,
+          NOW(),
+          version
+        );
+      END;`);
   },
 
   down: async (queryInterface, Sequelize) => {
