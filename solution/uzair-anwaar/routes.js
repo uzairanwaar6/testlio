@@ -3,10 +3,10 @@
 const Router = require('koa-router');
 
 // const discovery = require('./api/discovery');
-const health = require('./api/health');
+const health = require('./controllers/health');
 
-const users = require('./api/user');
-const issues = require('./api/issues');
+const users = require('./controllers/user');
+const issues = require('./controllers/issues');
 
 const router = new Router();
 
