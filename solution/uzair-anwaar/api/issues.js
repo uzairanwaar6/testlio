@@ -60,7 +60,7 @@ Issues.issue_revisions = async (context) => {
         [Op.between]: [revisionA, revisionB]
       }
     },
-    order: [['row_version', 'ASC']]
+    order: [['row_version', 'DESC']]
   });
 
   if (!revisions || revisions.length === 0) {
@@ -130,11 +130,16 @@ Issues.revisions = async (context) => {
       id
     } = context.params;
 
-    const revisions = await IssueHistory.findAll({
-      where: {
-        issue_id: { [Op.eq]: id }
-      },
-      order: [['row_version', 'DESC']]
+    const { offset, pn, ps } = paging.applyPaging(context.query);
+    const where = {
+      issue_id: { [Op.eq]: id }
+    };
+
+    const revisions = await IssueHistory.findAndCountAll({
+      where,
+      offset,
+      limit: ps,
+      order: [['row_version', 'ASC']]
     });
 
     responses.success(context, {

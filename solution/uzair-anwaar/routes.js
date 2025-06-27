@@ -45,22 +45,24 @@ router.post('/users/login', users.login);
 // Issues
 /**
  * @swagger
- * /issues/list:
+ * /issues:
  *   get:
  *     summary: List issues with optional pagination and filtering
  *     tags:
  *       - Issues
  *     parameters:
  *       - in: query
- *         name: page
+ *         name: pn
  *         schema:
  *           type: integer
- *         description: Page number
+ *           default: 1
+ *         description: Page number (default is 1)
  *       - in: query
- *         name: limit
+ *         name: ps
  *         schema:
  *           type: integer
- *         description: Number of results per page
+ *           default: 10
+ *         description: Number of results per page (default is 10)
  *       - in: query
  *         name: title
  *         schema:
@@ -75,7 +77,7 @@ router.post('/users/login', users.login);
  *       200:
  *         description: List of issues
  */
-router.get('/issues/list', issues.list);
+router.get('/issues', issues.list);
 
 /**
  * @swagger
@@ -123,7 +125,7 @@ router.get('/issues/:id', issues.get);
  *           type: integer
  *     responses:
  *       200:
- *         description: Issue revision comparison
+ *         description: Issue with the list of all revisions from revisionA to revisionB
  */
 router.get('/issues/:id/:revisionA/:revisionB', issues.issue_revisions);
 
@@ -140,9 +142,22 @@ router.get('/issues/:id/:revisionA/:revisionB', issues.issue_revisions);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: The ID of the issue
+ *       - in: query
+ *         name: pn
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number (default is 1)
+ *       - in: query
+ *         name: ps
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Page size (default is 10)
  *     responses:
  *       200:
- *         description: Revision history
+ *         description: Returns all the revisions for specific issue
  */
 router.get('/issues/revisions/:id', issues.revisions);
 
@@ -159,13 +174,11 @@ router.get('/issues/revisions/:id', issues.revisions);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [title, description, created_by]
+ *             required: [title, description]
  *             properties:
  *               title:
  *                 type: string
  *               description:
- *                 type: string
- *               created_by:
  *                 type: string
  *     responses:
  *       201:
@@ -198,8 +211,6 @@ router.post('/issues', issues.create);
  *               title:
  *                 type: string
  *               description:
- *                 type: string
- *               updated_by:
  *                 type: string
  *     responses:
  *       200:
