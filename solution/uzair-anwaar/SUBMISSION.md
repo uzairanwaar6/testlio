@@ -1,37 +1,112 @@
-Setup Instructions
-Please follow the instructions below to run the application.
+# Setup Instructions
 
-Install Packages
-Run the following command to install all the required pacakges.
-npm i
+Follow the steps below to run the application successfully.
 
-Create Database
-Create MySQL database in MySQL Server. You can provide any name you like.
+---
 
-Modify .env file
-You need to adjust the DB configuration in the .env file. Please open .env file and adjust all the fields that are prefixed with DB with respect to DB configuration.
+## 📦 Install Packages
 
-Run Migration
-Run the following command. This will create all the DB tables required.
+Run the following command to install all the required packages:
+
+```bash
+npm install
+```
+
+---
+
+## 🛢️ Create Database
+
+Create a new MySQL database in your MySQL Server. You can choose any name you prefer.
+
+---
+
+## ⚙️ Configure Environment Variables
+
+Update the `.env` file with your database configuration. Specifically, adjust all fields prefixed with `DB_` according to your local setup:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=your_database_name
+DB_USER=your_username
+DB_PASSWORD=your_password
+```
+
+---
+
+## 🛠️ Run Migrations
+
+Execute the following command to create all the required database tables:
+
+```bash
 npm run migrate
+```
 
-Run Seeder
-There are 2 seeders to create some initial data for Demo purposes. Please run the following command.
+---
+
+## 🌱 Run Seeders
+
+There are two seeders included to populate some initial demo data. Run:
+
+```bash
 npm run seed
+```
 
-Seed additional data
-If you want some other data for your testing purposes, you can use the data.sql file provided in the docs folder. The script will create some dummy data for testing purposes. The data is related to issues only.
+---
 
-Start the Application
-Run the following command to start the application.
+## 🧪 Seed Additional Data (Optional)
+
+To insert additional test data (related to issues), you can run the SQL script found in the `docs` folder:
+
+- File: `docs/data.sql`
+
+This script will generate dummy issues for testing purposes.
+
+---
+
+## 🚀 Start the Application
+
+Start the application using:
+
+```bash
 npm run start
-You can now visit to the "http://localhost:8080/docs" url to see the swagger documentation for the API
+```
 
-Start testing using Postman
-The Postman collection for the API and the Postman environment files are provided in the docs folder. Import the collection and environment files into Postman.
+Visit [http://localhost:8080/docs](http://localhost:8080/docs) to access the Swagger documentation for the API.
 
-After the import you need to adjust the "BaseUrl" variable in the environment. Please set the Current Value field as "http://localhost:8080/". Please keep the forward slash at the end  of the URL to avoid 404 issue during api calls. You can adjust the port as needed.
+---
 
-You will also need to set value for the "clientId" variable. The clientId is passed in every request. You can get the clientId from the client_id column of the clients table.
+## 🧪 API Testing with Postman
 
-Once you are done, you just need to call the Login api under User folder. This will retrieve the auth token form the API. After that you can call any API. The auth token and client_id will be passed automatically.
+### 🔁 Import Collection & Environment
+
+Import the following files from the `docs` folder into Postman:
+
+- API collection file
+- Postman environment file
+
+### ⚙️ Configure Postman Environment
+
+After importing:
+
+1. Set the `BaseUrl` variable’s **Current Value** to:
+
+   ```
+   http://localhost:8080/
+   ```
+
+   > ⚠️ **Note:** Keep the trailing slash `/` to avoid 404 errors.
+
+2. Set the `clientId` variable with a valid value from the `client_id` column in the `clients` table.
+
+### 🔐 Authenticate
+
+Call the **Login API** under the **User** folder. This will retrieve a JWT token from the API.
+
+After that, you can call any other API — the token and `X-Client-ID` will be passed automatically in requests.
+
+---
+
+## ✅ You're Ready!
+
+Your environment is now ready to explore the API.
