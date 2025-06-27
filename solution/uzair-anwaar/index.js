@@ -42,7 +42,7 @@ app.use(router.allowedMethods());
 
 app.listen(config.port, () => {
   console.log('Listening on http://localhost:%s/', config.port);
-  console.log('Swagger docs at http://localhost::%s/docs', config.port);
+  console.log('Swagger docs at http://localhost:%s/docs', config.port);
 });
 
 
